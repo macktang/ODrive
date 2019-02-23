@@ -28,6 +28,7 @@ public:
         float vel_gain = 5.0f / 10000.0f;  // [A/(counts/s)]
         // float vel_gain = 5.0f / 200.0f, // [A/(rad/s)] <sensorless example>
         float vel_integrator_gain = 10.0f / 10000.0f;  // [A/(counts/s * s)]
+        // float vel_integrator_gain = 0.0f;  // [A/(counts/s * s)]
         float vel_limit = 20000.0f;        // [counts/s]
         float vel_limit_tolerance = 1.2f;  // ratio to vel_lim. 0.0f to disable
         float vel_ramp_rate = 10000.0f;  // [(counts/s) / s]
@@ -44,7 +45,7 @@ public:
 
     // Trajectory-Planned control
     void move_to_pos(float goal_point);
-    
+
     // TODO: make this more similar to other calibration loops
     void start_anticogging_calibration();
     bool anticogging_calibration(float pos_estimate, float vel_estimate);
@@ -67,6 +68,7 @@ public:
         bool calib_anticogging;
         float calib_pos_threshold;
         float calib_vel_threshold;
+        bool dir_original;
     } Anticogging_t;
     Anticogging_t anticogging_ = {
         .index = 0,
@@ -75,6 +77,7 @@ public:
         .calib_anticogging = false,
         .calib_pos_threshold = 1.0f,
         .calib_vel_threshold = 1.0f,
+        .dir_original = true,
     };
 
     Error_t error_ = ERROR_NONE;
@@ -89,16 +92,31 @@ public:
 
     uint32_t traj_start_loop_count_ = 0;
 
+    float reached_code_1_ = 0.0f; // check that code was reached
+    float reached_code_2_ = 0.0f; // check that code was reached
+    float reached_code_3_ = 0.0f; // check that code was reached
+
     // Communication protocol definitions
     auto make_protocol_definitions() {
         return make_protocol_member_list(
             make_protocol_property("error", &error_),
+            make_protocol_ro_property("reached_code_1", &reached_code_1_),//added
+            make_protocol_ro_property("reached_code_2", &reached_code_2_),//added
+            make_protocol_ro_property("reached_code_3", &reached_code_3_),//added
             make_protocol_property("pos_setpoint", &pos_setpoint_),
             make_protocol_property("vel_setpoint", &vel_setpoint_),
             make_protocol_property("vel_integrator_current", &vel_integrator_current_),
             make_protocol_property("current_setpoint", &current_setpoint_),
             make_protocol_property("vel_ramp_target", &vel_ramp_target_),
             make_protocol_property("vel_ramp_enable", &vel_ramp_enable_),
+            // make_protocol_object("anticogging",
+            //     make_protocol_property("index", &anticogging_.index), // added
+            //     make_protocol_property("use_anticogging", &anticogging_.use_anticogging),// added
+            //     make_protocol_property("calib_anticogging", &anticogging_.calib_anticogging),
+            //     make_protocol_property("calib_pos_threshold", &anticogging_.calib_pos_threshold),// added
+            //     make_protocol_property("calib_vel_threshold", &anticogging_.calib_vel_threshold),// added
+            //     make_protocol_property("dir_original", &anticogging_.dir_original),// added
+            // ),
             make_protocol_object("config",
                 make_protocol_property("control_mode", &config_.control_mode),
                 make_protocol_property("pos_gain", &config_.pos_gain),

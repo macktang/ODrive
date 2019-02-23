@@ -160,7 +160,7 @@ bool Axis::run_sensorless_spin_up() {
     });
     if (error_ != ERROR_NONE)
         return false;
-    
+
     // Late Spin-up: accelerate
     float vel = config_.ramp_up_distance / config_.ramp_up_time;
     float phase = wrap_pm_pi(config_.ramp_up_distance);
@@ -240,7 +240,7 @@ void Axis::run_state_machine_loop() {
 
     // arm!
     motor_.arm();
-    
+
     for (;;) {
         // Load the task chain if a specific request is pending
         if (requested_state_ != AXIS_STATE_UNDEFINED) {
